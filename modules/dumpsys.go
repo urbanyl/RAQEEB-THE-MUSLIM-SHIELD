@@ -1,0 +1,34 @@
+// Copyright (c) 2021-2023 Claudio Guarnieri.
+// Use of this source code is governed by the MVT License 1.1
+// which can be found in the LICENSE file.
+
+package modules
+
+import (
+	"fmt"
+
+	"github.com/mvt-project/androidqf/acquisition"
+	"github.com/mvt-project/androidqf/adb"
+	"github.com/mvt-project/androidqf/log"
+)
+
+type Dumpsys struct{}
+
+func NewDumpsys() *Dumpsys {
+	return &Dumpsys{}
+}
+
+func (d *Dumpsys) Name() string {
+	return "dumpsys"
+}
+
+func (d *Dumpsys) Run(acq *acquisition.Acquisition, opts *Options) error {
+	log.Info("Collecting device diagnostic information. This might take a while...")
+
+	out, err := adb.Client.Shell("dumpsys")
+	if err != nil {
+		return fmt.Errorf("failed to run `adb shell dumpsys`: %v", err)
+	}
+
+	return saveStringToAcquisition(acq, "dumpsys.txt", out)
+}

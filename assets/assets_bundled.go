@@ -1,0 +1,73 @@
+// androidqf - Android Quick Forensics
+// Copyright (c) 2021-2022 Claudio Guarnieri.
+// Use of this software is governed by the MVT License 1.1 that can be found at
+//   https://license.mvt.re/1.1/
+
+//go:build !unbundle
+
+package assets
+
+import (
+	"embed"
+	"os"
+	"path/filepath"
+	"sync"
+)
+
+//go:embed collector_*
+var collector embed.FS
+
+type Asset struct {
+	Name string
+	Data []byte
+}
+
+var (
+	deployMu    sync.Mutex
+	deployedDir string
+)
+
+// Read a specific embedded collector binary
+func ReadCollectorFile(collectorName string) ([]byte, error) {
+	return collector.ReadFile(collectorName)
+}
+
+// DeployAssets is used to retrieve the embedded adb binaries and store them.
+func DeployAssets() (string, error) {
+	deployMu.Lock()
+	defer deployMu.Unlock()
+
+	if deployedDir != "" {
+		return deployedDir, nil
+	}
+
+	dir, err := os.MkdirTemp("", "androidqf-")
+	if err != nil {
+		return "", err
+	}
+
+	for _, asset := range getAssets() {
+		assetPath := filepath.Join(dir, asset.Name)
+		if err := os.WriteFile(assetPath, asset.Data, 0o755); err != nil {
+			_ = os.RemoveAll(dir)
+			return "", err
+		}
+	}
+
+	deployedDir = dir
+	return dir, nil
+}
+
+// Remove assets from the local disk
+func CleanAssets() error {
+	deployMu.Lock()
+	dir := deployedDir
+	deployedDir = ""
+	deployMu.Unlock()
+
+	if dir == "" {
+		return nil
+	}
+
+	return os.RemoveAll(dir)
+}
