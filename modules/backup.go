@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/log"
 )
@@ -44,13 +43,8 @@ func ParseBackupOption(value string) (string, error) {
 
 func (b *Backup) Run(acq *acquisition.Acquisition, opts *Options) error {
 	backupOption, err := resolveOption(opts, opts.Backup, "-backup (sms, all, none)", func() (string, error) {
-		log.Info("Would you like to take a backup of the device?")
-		promptBackup := promptui.Select{
-			Label: "Backup",
-			Items: []string{backupOnlySMS, backupEverything, backupNothing},
-		}
-		_, selection, err := promptBackup.Run()
-		return selection, err
+		log.Info("Taking an SMS backup of the device. Please confirm the backup on your phone screen when asked.")
+		return backupOnlySMS, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for backup option: %v", err)

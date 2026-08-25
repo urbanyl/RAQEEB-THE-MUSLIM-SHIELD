@@ -14,7 +14,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/adb"
 	"github.com/mvt-project/androidqf/log"
@@ -69,13 +68,8 @@ func (m *IL) Run(acq *acquisition.Acquisition, opts *Options) error {
 
 	// Ask user first
 	ILOption, err := resolveOption(opts, opts.IntrusionLogs, "-intrusion-logs (yes, no)", func() (string, error) {
-		log.Info("Would you like to download Intrusion Logs from the device?")
-		promptIL := promptui.Select{
-			Label: "Intrusion Logs",
-			Items: []string{acquireIL, skipIL},
-		}
-		_, selection, err := promptIL.Run()
-		return selection, err
+		log.Info("Downloading Intrusion Logs from the device.")
+		return acquireIL, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for IL option: %v", err)

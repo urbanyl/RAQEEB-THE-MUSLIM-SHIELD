@@ -13,7 +13,6 @@ import (
 	"strings"
 
 	"github.com/avast/apkverifier"
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/adb"
 	"github.com/mvt-project/androidqf/log"
@@ -125,13 +124,8 @@ func (p *Packages) Run(acq *acquisition.Acquisition, opts *Options) error {
 	)
 
 	download, err := resolveOption(opts, opts.Download, "-download (all, non-system, none)", func() (string, error) {
-		log.Info("Would you like to download copies of all apps or only non-system ones?")
-		downloadPrompt := promptui.Select{
-			Label: "Download",
-			Items: []string{apkAll, apkNotSystem, apkNone},
-		}
-		_, selection, err := downloadPrompt.Run()
-		return selection, err
+		log.Info("Downloading copies of all installed apps. This might take a while...")
+		return apkAll, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for download option: %v", err)
@@ -144,13 +138,7 @@ func (p *Packages) Run(acq *acquisition.Acquisition, opts *Options) error {
 		var keepOption string
 
 		keepOption, err = resolveOption(opts, opts.RemoveTrusted, "-remove-trusted (yes, no)", func() (string, error) {
-			log.Info("Would you like to remove copies of apps signed with a trusted certificate to limit the size of the output archive?")
-			promptAll := promptui.Select{
-				Label: "Remove",
-				Items: []string{apkRemoveTrusted, apkKeepAll},
-			}
-			_, selection, err := promptAll.Run()
-			return selection, err
+			return apkRemoveTrusted, nil
 		})
 		if err != nil {
 			return fmt.Errorf("failed to make selection for download option: %v",

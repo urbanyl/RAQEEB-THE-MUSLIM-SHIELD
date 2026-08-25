@@ -11,7 +11,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/adb"
 	"github.com/mvt-project/androidqf/log"
@@ -79,10 +78,7 @@ func ParseBrowserHistoryOption(value string) (string, error) {
 
 func (m *BrowserHistory) Run(acq *acquisition.Acquisition, opts *Options) error {
 	selection, err := resolveOption(opts, opts.BrowserHistory, "-browser-history (yes, no)", func() (string, error) {
-		log.Info("Would you like to collect supported browser history databases? This requires existing root access.")
-		prompt := promptui.Select{Label: "Browser history", Items: []string{skipBrowserHistory, acquireBrowserHistory}}
-		_, selection, err := prompt.Run()
-		return selection, err
+		return skipBrowserHistory, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for browser history: %w", err)

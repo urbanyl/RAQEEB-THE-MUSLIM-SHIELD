@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/adb"
 	"github.com/mvt-project/androidqf/log"
@@ -54,13 +53,7 @@ func findFiles(collector fileFinder, path string, withHashes bool) ([]adb.FileIn
 
 func (f *Files) Run(acq *acquisition.Acquisition, opts *Options) error {
 	hashOption, err := resolveOption(opts, opts.HashFiles, "-hash-files (yes, no)", func() (string, error) {
-		log.Info("Would you like to hash files on the device? This is resource-intensive and may cause the collector to stop on some devices.")
-		promptHash := promptui.Select{
-			Label: "Hash files",
-			Items: []string{skipHashes, hashFiles},
-		}
-		_, selection, err := promptHash.Run()
-		return selection, err
+		return skipHashes, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for file hashing option: %v", err)

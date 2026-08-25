@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/manifoldco/promptui"
 	"github.com/mvt-project/androidqf/acquisition"
 	"github.com/mvt-project/androidqf/adb"
 	"github.com/mvt-project/androidqf/log"
@@ -62,13 +61,7 @@ func ParseMagiskModulesOption(value string) (string, error) {
 
 func (m *MagiskModules) Run(acq *acquisition.Acquisition, opts *Options) error {
 	selection, err := resolveOption(opts, opts.MagiskModules, "-magisk-modules (yes, no)", func() (string, error) {
-		log.Info("Would you like to collect installed Magisk module metadata? This requires existing root access.")
-		prompt := promptui.Select{
-			Label: "Magisk modules",
-			Items: []string{skipMagiskModules, acquireMagiskModules},
-		}
-		_, selection, err := prompt.Run()
-		return selection, err
+		return skipMagiskModules, nil
 	})
 	if err != nil {
 		return fmt.Errorf("failed to make selection for Magisk modules: %w", err)
