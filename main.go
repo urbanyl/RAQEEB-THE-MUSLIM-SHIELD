@@ -33,14 +33,32 @@ type deviceMenuItem struct {
 }
 
 func init() {
-	cfmt.Print(`
-	{{     /\        ____      _    ___  _____ _____ ____   }}::blue
-	{{    /  \      |  _ \    / \  / _ \| ____| ____| __ )  }}::blue
-	{{   < () >     | |_) |  / _ \| | | |  _| |  _| |  _ \  }}::blue
-	{{    \  /      |  _ <  / ___ \ |_| | |___| |___| |_) | }}::blue
-	{{     \/       |_| \_\/_/   \_\__\_\_____|_____|____/  }}::blue
-	`)
-	cfmt.Println("{{         R A Q E E B   //   T H E   M U S L I M   S H I E L D}}::blue")
+	cfmt.Println()
+	cfmt.Println(`{{              _______________            }}::cyan`)
+	cfmt.Println(`{{             |###############|           }}::cyan`)
+	cfmt.Println(`{{             |###|       |###|           }}::cyan`)
+	cfmt.Println(`{{             |###|  }}::cyan` + `{{/\}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
+	cfmt.Println(`{{             |###| }}::cyan` + `{{/  \}}::lightWhite|bold` + `{{  |###|           }}::cyan`)
+	cfmt.Println(`{{             |###|}}::cyan` + `{{/____\}}::lightWhite|bold` + `{{ |###|           }}::cyan`)
+	cfmt.Println(`{{             |###|  }}::cyan` + `{{||}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
+	cfmt.Println(`{{             |###|  }}::cyan` + `{{||}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
+	cfmt.Println(`{{             |###\__}}::cyan` + `{{||}}::lightWhite|bold` + `{{__/|###|           }}::cyan`)
+	cfmt.Println(`{{              \###########/            }}::cyan`)
+	cfmt.Println(`{{               \#########/             }}::cyan`)
+	cfmt.Println(`{{                \#######/              }}::cyan`)
+	cfmt.Println(`{{                 \#####/               }}::cyan`)
+	cfmt.Println(`{{                  \###/                }}::cyan`)
+	cfmt.Println(`{{                   \#/                 }}::cyan`)
+	cfmt.Println(`{{                    V                  }}::cyan`)
+	cfmt.Println()
+	cfmt.Println(`{{   ██████╗  █████╗  ██████╗ ███████╗███████╗██████╗ }}::lightBlue|bold`)
+	cfmt.Println(`{{   ██╔══██╗██╔══██╗██╔═══██╗██╔════╝██╔════╝██╔══██╗}}::lightBlue|bold`)
+	cfmt.Println(`{{   ██████╔╝███████║██║   ██║█████╗  █████╗  ██████╔╝}}::lightBlue|bold`)
+	cfmt.Println(`{{   ██╔══██╗██╔══██║██║▄▄ ██║██╔══╝  ██╔══╝  ██╔══██╗}}::lightBlue|bold`)
+	cfmt.Println(`{{   ██║  ██║██║  ██║╚██████╔╝███████╗███████╗██████╔╝}}::lightBlue|bold`)
+	cfmt.Println(`{{   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══▀▀═╝ ╚══════╝╚══════╝╚═════╝ }}::lightBlue|bold`)
+	cfmt.Println()
+	cfmt.Println(`{{      رقيب   ·   T H E   M U S L I M   S H I E L D}}::cyan`)
 	cfmt.Println()
 }
 
