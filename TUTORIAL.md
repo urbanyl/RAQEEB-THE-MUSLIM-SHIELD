@@ -4,6 +4,33 @@ This guide is for **Windows**. It takes about 15 minutes the first time.
 
 ---
 
+## ⚡ Quick start (copy-paste)
+
+If you already have **Python** and **Git** installed, paste this whole block into
+a terminal (Start → type `cmd` → Enter) to download and set everything up:
+
+```bash
+git clone https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD.git && cd RAQEEB-THE-MUSLIM-SHIELD && pip install mvt && mvt-android download-iocs
+```
+
+Then download `raqeeb-The.muslim.shield.exe` from the
+[Releases page](https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases)
+into that folder, connect your phone (with USB debugging on), and run:
+
+```bash
+raqeeb-The.muslim.shield.exe
+```
+
+When it finishes, scan the file it made and open the report (replace `YOUR-FILE.zip`):
+
+```bash
+mvt-android check-androidqf --non-interactive -o results YOUR-FILE.zip && python raqeeb-scan.py --summarize results
+```
+
+The detailed version of every step is below.
+
+---
+
 ## What you need first
 
 1. **Your phone** and a **USB cable** (a real data cable, not charge-only).
