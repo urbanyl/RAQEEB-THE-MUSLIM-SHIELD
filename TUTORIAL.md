@@ -31,6 +31,29 @@ The detailed version of every step is below.
 
 ---
 
+## 🖱️ Easiest way: the one-click launcher
+
+Instead of typing scan commands, you can use the launcher, which asks
+**Android or iPhone** and does the rest for you.
+
+1. Do the one-line setup above (`git clone ... && pip install mvt && ...`).
+2. Put `raqeeb-The.muslim.shield.exe` (from Releases) in the folder.
+3. Double-click **`Scan my phone.bat`** — or run:
+
+```bash
+python raqeeb.py
+```
+
+Pick **1** for Android. It collects, scans, and opens the report for you.
+
+**iPhone (experimental):** pick **2**. First download `raqeeb-ios-tools.zip`
+from the [Releases page](https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases),
+unzip it into the folder, and install Apple's USB driver (comes with iTunes or
+the free *Apple Devices* app). The iPhone path is newer and less tested than
+Android — please report any issues.
+
+---
+
 ## What you need first
 
 1. **Your phone** and a **USB cable** (a real data cable, not charge-only).
