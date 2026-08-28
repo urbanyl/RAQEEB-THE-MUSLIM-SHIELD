@@ -42,8 +42,8 @@ jobs:
         working-directory: android-collector
         run: |
           for arch in arm arm64 amd64 386; do
-            GOARM=$( [ "$arch" = arm ] && echo 6 )
-            GOOS=linux GOARCH=$arch GOARM=$GOARM go build -ldflags="-s -w" -o ../assets/collector_$arch .
+            if [ "$arch" = arm ]; then export GOARM=6; else unset GOARM; fi
+            GOOS=linux GOARCH=$arch go build -ldflags="-s -w" -o ../assets/collector_$arch .
           done
           ls -la ../assets/collector_*
 
