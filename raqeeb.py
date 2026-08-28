@@ -7,14 +7,32 @@ collection + spyware scan. Android is fully automated; iPhone is guided
 
 import os
 import subprocess
+import glob
+import shutil
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-COLLECTOR = os.path.join(HERE, "raqeeb-The.muslim.shield-v1.1.exe")
+
+
+def find_collector():
+    """Find the Raqeeb collector exe next to this script (any version name)."""
+    candidates = (glob.glob(os.path.join(HERE, "raqeeb-The.muslim.shield*.exe"))
+                  + glob.glob(os.path.join(HERE, "raqeeb*.exe")))
+    return candidates[0] if candidates else os.path.join(HERE, "raqeeb-The.muslim.shield.exe")
+
+
+def find_mvt(name):
+    """Prefer a bundled MVT, else the one 'pip install mvt' put on PATH."""
+    bundled = os.path.join(HERE, "mvt", ".venv", "Scripts", name + ".exe")
+    if os.path.exists(bundled):
+        return bundled
+    return shutil.which(name) or name
+
+
+COLLECTOR = find_collector()
 SCANNER = os.path.join(HERE, "raqeeb-scan.py")
-MVT_DIR = os.path.join(HERE, "mvt", ".venv", "Scripts")
-MVT_IOS = os.path.join(MVT_DIR, "mvt-ios.exe")
-MVT_ANDROID = os.path.join(MVT_DIR, "mvt-android.exe")
+MVT_IOS = find_mvt("mvt-ios")
+MVT_ANDROID = find_mvt("mvt-android")
 IOS_TOOLS = os.path.join(HERE, "raqeeb-ios-tools")
 IDEVICEINFO = os.path.join(IOS_TOOLS, "ideviceinfo.exe")
 IDEVICEPAIR = os.path.join(IOS_TOOLS, "idevicepair.exe")
@@ -54,8 +72,23 @@ def newest_zip_in(folder):
     return max(zips, key=os.path.getmtime) if zips else None
 
 
+def require(path, what, hint):
+    if not (os.path.exists(path) or shutil.which(os.path.basename(path))):
+        print(YELLOW + f"\n  {what} was not found." + RESET)
+        print(DIM + f"  {hint}" + RESET)
+        return False
+    return True
+
+
 def run_android():
     print(f"\n{CYAN}== ANDROID =={RESET}")
+    if not require(COLLECTOR, "The Raqeeb collector (.exe)",
+                   "Download it from the Releases page and put it in this folder:\n"
+                   "  https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases"):
+        return
+    if not require(MVT_ANDROID, "MVT (the scanner)",
+                   "Install it once with:  pip install mvt"):
+        return
     print("  1. Enable USB debugging on the phone (Settings > About phone,")
     print("     tap Build number 7x; then Developer options > USB debugging).")
     print("  2. Connect the phone by USB and tap 'Allow' on the phone.\n")
@@ -76,6 +109,13 @@ def run_android():
 
 def run_iphone():
     print(f"\n{CYAN}== iPHONE (iOS) =={RESET}")
+    if not require(IDEVICEBACKUP2, "The iPhone tools (raqeeb-ios-tools)",
+                   "Download raqeeb-ios-tools.zip from the Releases page, unzip it into\n"
+                   "  this folder, then run Raqeeb again:\n"
+                   "  https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases"):
+        return
+    if not require(MVT_IOS, "MVT (the scanner)", "Install it once with:  pip install mvt"):
+        return
     print("  Raqeeb will make an encrypted backup of the iPhone and scan it.")
     print("  This is the same method Amnesty International uses - no jailbreak.\n")
     print("  1. Connect the iPhone by USB cable and unlock it.")

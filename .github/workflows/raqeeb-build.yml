@@ -59,6 +59,14 @@ jobs:
       - name: Build Raqeeb
         run: go build -o raqeeb-The.muslim.shield.exe .
 
+      - name: Package iPhone tools (libimobiledevice)
+        shell: pwsh
+        run: |
+          $url = "https://github.com/libimobiledevice-win32/imobiledevice-net/releases/download/v1.3.17/libimobiledevice.1.2.1-r1122-win-x64.zip"
+          Invoke-WebRequest -Uri $url -OutFile imd.zip
+          Expand-Archive imd.zip -DestinationPath raqeeb-ios-tools -Force
+          Compress-Archive -Path raqeeb-ios-tools/* -DestinationPath raqeeb-ios-tools.zip -Force
+
       # --- Optional: sign the binary so Windows trusts it -------------------
       # - name: Sign with SignPath
       #   uses: signpath/github-action-submit-signing-request@v1
@@ -82,5 +90,7 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/')
         uses: softprops/action-gh-release@v2
         with:
-          files: raqeeb-The.muslim.shield.exe
+          files: |
+            raqeeb-The.muslim.shield.exe
+            raqeeb-ios-tools.zip
           generate_release_notes: true

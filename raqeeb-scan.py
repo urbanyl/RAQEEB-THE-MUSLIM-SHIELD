@@ -11,11 +11,26 @@ import glob
 import io
 import json
 import os
+import shutil
 import subprocess
 import sys
 import zipfile
 
-MVT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "mvt", ".venv", "Scripts", "mvt-android.exe")
+
+def find_mvt(name="mvt-android"):
+    """Locate an MVT command. Prefer a copy bundled next to this script,
+    otherwise use the one 'pip install mvt' put on the system PATH."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    bundled = os.path.join(here, "mvt", ".venv", "Scripts", name + ".exe")
+    if os.path.exists(bundled):
+        return bundled
+    found = shutil.which(name)
+    if found:
+        return found
+    return name  # last resort; will error clearly if truly missing
+
+
+MVT = find_mvt("mvt-android")
 
 GREEN, YELLOW, RED, BOLD, DIM, RESET = "\033[92m", "\033[93m", "\033[91m", "\033[1m", "\033[2m", "\033[0m"
 
