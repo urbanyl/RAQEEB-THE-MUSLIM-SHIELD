@@ -1,8 +1,8 @@
 name: Build Raqeeb (Windows)
 
-# Builds the Raqeeb Windows executable from source on GitHub's servers.
-# Building on GitHub gives the release traceable provenance, which helps
-# Windows SmartScreen / Smart App Control trust it over time.
+# Builds the Raqeeb Windows executable from source on GitHub's servers and
+# attaches it to a release. Building on GitHub gives the binary traceable
+# provenance, which helps Windows trust it over time.
 #
 # To sign the binary later (removes the Windows block for users):
 #   1. Get a free open-source code-signing certificate from https://signpath.io
@@ -28,6 +28,29 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: "1.24"
+
+      # The Go build embeds two kinds of helper binaries that are NOT stored in
+      # git (they are large and rebuildable): the on-device Android collectors,
+      # and Windows adb. We produce them here before building.
+
+      - name: Build Android collector binaries
+        shell: bash
+        working-directory: android-collector
+        run: |
+          for arch in arm arm64 amd64 386; do
+            GOARM=$( [ "$arch" = arm ] && echo 6 )
+            GOOS=linux GOARCH=$arch GOARM=$GOARM go build -ldflags="-s -w" -o ../assets/collector_$arch .
+          done
+          ls -la ../assets/collector_*
+
+      - name: Fetch Windows adb (platform-tools)
+        shell: pwsh
+        run: |
+          Invoke-WebRequest -Uri "https://dl.google.com/android/repository/platform-tools-latest-windows.zip" -OutFile pt.zip
+          Expand-Archive pt.zip -DestinationPath pt -Force
+          Copy-Item pt/platform-tools/adb.exe            assets/adb.exe
+          Copy-Item pt/platform-tools/AdbWinApi.dll      assets/AdbWinApi.dll
+          Copy-Item pt/platform-tools/AdbWinUsbApi.dll   assets/AdbWinUsbApi.dll
 
       - name: Build Raqeeb
         run: go build -o raqeeb-The.muslim.shield.exe .
@@ -56,3 +79,4 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           files: raqeeb-The.muslim.shield.exe
+          generate_release_notes: true
