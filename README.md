@@ -6,6 +6,11 @@
 
 Licensed under the [MVT License 1.1](https://license.mvt.re/1.1/) — see [License](#license).
 
+[![Latest release](https://img.shields.io/github/v/release/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD)](https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases/latest)
+
+### 👉 New here? Follow the [step-by-step tutorial](TUTORIAL.md).
+### ⬇️ Just want the app? [Download the latest release.](https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases/latest)
+
 ---
 
 ## What it does
