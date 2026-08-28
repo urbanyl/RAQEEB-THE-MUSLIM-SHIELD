@@ -27,7 +27,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: "1.26"
 
       # The Go build embeds two kinds of helper binaries that are NOT stored in
       # git (they are large and rebuildable): the on-device Android collectors,
