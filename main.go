@@ -34,23 +34,6 @@ type deviceMenuItem struct {
 
 func init() {
 	cfmt.Println()
-	cfmt.Println(`{{              _______________            }}::cyan`)
-	cfmt.Println(`{{             |###############|           }}::cyan`)
-	cfmt.Println(`{{             |###|       |###|           }}::cyan`)
-	cfmt.Println(`{{             |###|  }}::cyan` + `{{/\}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
-	cfmt.Println(`{{             |###| }}::cyan` + `{{/  \}}::lightWhite|bold` + `{{  |###|           }}::cyan`)
-	cfmt.Println(`{{             |###|}}::cyan` + `{{/____\}}::lightWhite|bold` + `{{ |###|           }}::cyan`)
-	cfmt.Println(`{{             |###|  }}::cyan` + `{{||}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
-	cfmt.Println(`{{             |###|  }}::cyan` + `{{||}}::lightWhite|bold` + `{{   |###|           }}::cyan`)
-	cfmt.Println(`{{             |###\__}}::cyan` + `{{||}}::lightWhite|bold` + `{{__/|###|           }}::cyan`)
-	cfmt.Println(`{{              \###########/            }}::cyan`)
-	cfmt.Println(`{{               \#########/             }}::cyan`)
-	cfmt.Println(`{{                \#######/              }}::cyan`)
-	cfmt.Println(`{{                 \#####/               }}::cyan`)
-	cfmt.Println(`{{                  \###/                }}::cyan`)
-	cfmt.Println(`{{                   \#/                 }}::cyan`)
-	cfmt.Println(`{{                    V                  }}::cyan`)
-	cfmt.Println()
 	cfmt.Println(`{{   ██████╗  █████╗  ██████╗ ███████╗███████╗██████╗ }}::lightBlue|bold`)
 	cfmt.Println(`{{   ██╔══██╗██╔══██╗██╔═══██╗██╔════╝██╔════╝██╔══██╗}}::lightBlue|bold`)
 	cfmt.Println(`{{   ██████╔╝███████║██║   ██║█████╗  █████╗  ██████╔╝}}::lightBlue|bold`)
@@ -58,7 +41,7 @@ func init() {
 	cfmt.Println(`{{   ██║  ██║██║  ██║╚██████╔╝███████╗███████╗██████╔╝}}::lightBlue|bold`)
 	cfmt.Println(`{{   ╚═╝  ╚═╝╚═╝  ╚═╝ ╚══▀▀═╝ ╚══════╝╚══════╝╚═════╝ }}::lightBlue|bold`)
 	cfmt.Println()
-	cfmt.Println(`{{      رقيب   ·   T H E   M U S L I M   S H I E L D}}::cyan`)
+	cfmt.Println(`{{        T H E   M U S L I M   S H I E L D}}::cyan`)
 	cfmt.Println()
 }
 
