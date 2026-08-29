@@ -84,6 +84,22 @@ mvt-android check-androidqf --non-interactive -p YOUR-PIN -o results <UUID>.zip
 python raqeeb-scan.py <UUID>.zip           # add -p YOUR-PIN to include SMS
 ```
 
+It checks the archive is complete before scanning, and saves each scan into its
+own **timestamped** results folder (`<UUID>-results-YYYYMMDD-HHMMSS`) so a
+re-scan never destroys a previous scan's findings. It also opens a browser
+report that shows exactly which phone and archive were scanned (device model,
+Android version, serial, how many apps were recorded), and warns you if part of
+the phone's data could not be collected (a "partial" acquisition).
+
+---
+
+## Cross-platform
+
+The launcher here works on **Windows** (`Scan my phone.bat`, `setup.bat`) and on
+**macOS / Linux** (`./run.sh`, `./setup.sh`). They all run the same `raqeeb.py`
+launcher, which asks **Android or iPhone** and handles collection + scanning for
+you.
+
 ---
 
 ## Build

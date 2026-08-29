@@ -14,11 +14,34 @@ import sys
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
+def default_collector_name():
+    return "raqeeb-The.muslim.shield" + (".exe" if os.name == "nt" else "")
+
+
 def find_collector():
-    """Find the Raqeeb collector exe next to this script (any version name)."""
-    candidates = (glob.glob(os.path.join(HERE, "raqeeb-The.muslim.shield*.exe"))
-                  + glob.glob(os.path.join(HERE, "raqeeb*.exe")))
-    return candidates[0] if candidates else os.path.join(HERE, "raqeeb-The.muslim.shield.exe")
+    """Find the Raqeeb collector binary next to this script (any version name,
+    on any OS - Windows uses .exe, macOS/Linux have no extension)."""
+    is_windows = os.name == "nt"
+    candidates = (glob.glob(os.path.join(HERE, "raqeeb-The.muslim.shield*"))
+                  + glob.glob(os.path.join(HERE, "raqeeb*")))
+    # Prefer an executable-looking entry: on Windows the .exe, elsewhere a
+    # file (not a directory like .py sources) or an .exe copied over.
+    def pick(c):
+        base = os.path.basename(c)
+        bad = (base.startswith("raqeeb-scan") or base.startswith("raqeeb.py")
+               or base.startswith("raqeeb-ios") or base == "raqeeb.py")
+        if bad:
+            return False
+        ext = os.path.splitext(base)[1].lower()
+        if is_windows:
+            return ext == ".exe"
+        # macOS/Linux: the collector is an extensionless binary (or an .exe
+        # copied over). This excludes logos (.png), sources (.py), and zips.
+        return ext == ".exe" or ext == ""
+    for c in candidates:
+        if pick(c):
+            return c
+    return os.path.join(HERE, default_collector_name())
 
 
 def find_mvt(name):
@@ -160,7 +183,11 @@ def run_iphone():
     print(GREEN + f"\n  Backup saved: {target}" + RESET)
 
     # 5. Scan it with mvt-ios.
-    results = os.path.join(HERE, "iphone-results")
+    # Use a fresh, timestamped results folder so a re-scan never destroys a
+    # previous scan's findings (important for a forensic tool).
+    import datetime
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    results = os.path.join(HERE, "iphone-results-" + stamp)
     print(DIM + "  Decrypting and scanning the backup for spyware..." + RESET)
     subprocess.run([MVT_IOS, "check-backup", "--non-interactive",
                     "-p", BACKUP_PASSWORD, "-o", results, target])

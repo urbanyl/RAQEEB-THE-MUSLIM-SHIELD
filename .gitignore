@@ -1,8 +1,10 @@
 # Personal scan data - never commit
 *.zip
 *-results/
+*-results-*/
 iphone-backup/
 iphone-results/
+iphone-results-*/
 # Large / built binaries - distribute via Releases, or fetch at build time
 *.exe
 *.dll

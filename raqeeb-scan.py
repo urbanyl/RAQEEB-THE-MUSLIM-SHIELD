@@ -7,6 +7,7 @@ Usage:
 """
 
 import argparse
+import datetime
 import glob
 import io
 import json
@@ -82,6 +83,97 @@ def repack_if_needed(zip_path):
     return fixed
 
 
+def find_acquisition_json(zip_path):
+    """Locate acquisition.json inside the archive, whether it is at the root
+    or under an 'acquisition/' subfolder."""
+    with zipfile.ZipFile(zip_path) as z:
+        for name in z.namelist():
+            if name.endswith("acquisition.json"):
+                return name
+    return None
+
+
+def read_metadata(zip_path):
+    """Read acquisition metadata so the report can show exactly which phone /
+    archive was scanned. Combines acquisition.json (uuid, version, timestamps,
+    module outcomes) with device properties from getprop.txt."""
+    meta = {
+        "id": "", "version": "", "device": "", "manufacturer": "",
+        "os": "", "serial": "", "started": "", "finished": "",
+        "module_results": [], "app_count": "", "fingerprint": "",
+    }
+    try:
+        name = find_acquisition_json(zip_path)
+        if name:
+            with zipfile.ZipFile(zip_path) as z:
+                raw = json.loads(z.read(name).decode("utf-8", "replace"))
+            meta["id"] = raw.get("uuid", "")
+            meta["version"] = raw.get("androidqf_version", "")
+            meta["started"] = str(raw.get("started", "") or "")
+            meta["finished"] = str(raw.get("completed", "") or "")
+            if isinstance(raw.get("module_results"), list):
+                meta["module_results"] = raw["module_results"]
+    except Exception:
+        pass
+
+    # Device properties come from the raw `adb shell getprop` output.
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            text = z.read("getprop.txt").decode("utf-8", "replace")
+        keymap = {
+            "[ro.product.model]": "device",
+            "[ro.product.manufacturer]": "manufacturer",
+            "[ro.build.version.release]": "os",
+            "[ro.serialno]": "serial",
+            "[ro.build.fingerprint]": "fingerprint",
+        }
+        for marker, field in keymap.items():
+            for line in text.splitlines():
+                if line.startswith(marker):
+                    # getprop lines look like:  [ro.product.model]: [Pixel 7]
+                    value = line[len(marker):].strip()
+                    value = value.lstrip(":").strip()
+                    if value.startswith("[") and value.endswith("]"):
+                        value = value[1:-1]
+                    if value:
+                        meta[field] = value.strip()
+                        break
+    except Exception:
+        pass
+
+    # Rough sense of how many installed apps were recorded.
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            pkgs = json.loads(z.read("packages.json").decode("utf-8", "replace"))
+        if isinstance(pkgs, list):
+            meta["app_count"] = str(len(pkgs))
+    except Exception:
+        pass
+
+    return meta
+
+
+def verify_archive(zip_path):
+    """Check the acquisition archive is a complete, readable zip. Returns an
+    error string, or None if the archive looks fine."""
+    try:
+        with zipfile.ZipFile(zip_path) as z:
+            bad = z.testzip()
+            if bad:
+                return f"The archive is damaged (bad entry: {bad}). Re-collect the data."
+        # Check we can at least see the acquisition metadata.
+        if find_acquisition_json(zip_path) is None:
+            return ("This does not look like a Raqeeb/androidqf archive "
+                    "(no acquisition.json found). Have you picked the right file?")
+    except zipfile.BadZipFile:
+        return "The file is not a valid zip archive. Is it the archive Raqeeb produced?"
+    except FileNotFoundError:
+        return f"File not found: {zip_path}"
+    except Exception as e:
+        return f"Could not read the archive: {e}"
+    return None
+
+
 def friendly_reason(message):
     for needle, explanation in FRIENDLY:
         if needle in message:
@@ -89,10 +181,11 @@ def friendly_reason(message):
     return "Flagged for manual review."
 
 
-def write_html_report(results_dir, detections, warnings):
+def write_html_report(results_dir, detections, warnings, metadata=None):
     """Write a clean browser report a non-technical person can read at a glance."""
     import html as _html
 
+    metadata = metadata or {}
     clean = not detections
     if clean:
         verdict, sub, klass = ("No spyware found",
@@ -128,6 +221,39 @@ def write_html_report(results_dir, detections, warnings):
               <a href="https://securitylab.amnesty.org/get-help/">securitylab.amnesty.org/get-help</a></li>
         </ol>
       </div>"""
+
+    # Device / acquisition info block, so the reader can see exactly what was scanned.
+    meta_rows = ""
+    fields = []
+    if metadata.get("manufacturer") and metadata.get("device"):
+        fields.append(("Device", f"{metadata.get('manufacturer')} {metadata.get('device')}".strip()))
+    elif metadata.get("device"):
+        fields.append(("Device", metadata.get("device")))
+    if metadata.get("os"):
+        fields.append(("Android", metadata.get("os")))
+    if metadata.get("serial"):
+        fields.append(("Serial", metadata.get("serial")))
+    if metadata.get("app_count"):
+        fields.append(("Apps recorded", metadata.get("app_count")))
+    if metadata.get("id"):
+        fields.append(("Acquisition ID", metadata.get("id")))
+    fields.append(("Results folder", os.path.basename(results_dir) if results_dir else ""))
+    for label, value in fields:
+        if value:
+            meta_rows += (f'<div class="mrow"><span class="mlabel">{_html.escape(label)}</span>'
+                          f'<span class="mvalue">{_html.escape(str(value))}</span></div>')
+    meta_html = f'<div class="meta"><div class="mtitle">Scanned data</div>{meta_rows}</div>' if meta_rows else ""
+
+    # If some collection module did not complete, warn that this may be
+    # partial evidence (it should be treated with extra caution).
+    imperfect = ""
+    modules = metadata.get("module_results") or []
+    incomplete = [m for m in modules if m.get("status") in ("partial", "failed")]
+    if incomplete:
+        names = ", ".join(m.get("name", "?") for m in incomplete)
+        imperfect = (f'<div class="advice"><h3 style="color:var(--warn)">Incomplete data</h3>'
+                     f'<p style="color:var(--ink)">Some parts of the phone could not be collected '
+                     f'({_html.escape(names)}). The scan below may be less complete than usual.</p></div>')
 
     page = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -166,14 +292,26 @@ def write_html_report(results_dir, detections, warnings):
   ul.tech {{ color:var(--dim); font-size:14px; font-family:ui-monospace,Consolas,monospace;
             word-break:break-all; }}
   .foot {{ color:var(--dim); font-size:13px; text-align:center; margin-top:28px; }}
+  .meta {{ background:var(--card); border:1px solid var(--line); border-radius:10px;
+          padding:12px 16px; margin-top:18px; font-size:14px; }}
+  .mtitle {{ color:var(--dim); font-size:11px; text-transform:uppercase;
+            letter-spacing:.12em; margin-bottom:8px; }}
+  .mrow {{ display:flex; justify-content:space-between; gap:16px; padding:3px 0;
+          border-top:1px solid var(--line); }}
+  .mrow:first-of-type {{ border-top:none; }}
+  .mlabel {{ color:var(--dim); }}
+  .mvalue {{ font-family:ui-monospace,Consolas,monospace; word-break:break-all;
+            text-align:right; }}
 </style></head><body><div class="wrap">
   <div class="brand">R A Q E E B &nbsp;·&nbsp; THE MUSLIM SHIELD</div>
+  {meta_html}
   <div class="verdict {klass}">
     <div class="icon">{"✓" if clean else "⚠"}</div>
     <h1>{_html.escape(verdict)}</h1>
     <p>{_html.escape(sub)}</p>
   </div>
   {f'<div class="matches"><h3 style="color:var(--danger)">Matched spyware</h3><ul>{det_html}</ul></div>' if det_html else ''}
+  {imperfect}
   {danger_block}
   {f'<div class="section-title">Things worth a quick look (not spyware)</div>{warn_html}' if warn_html else ''}
   <p class="foot">A clean result means no <b>known</b> spyware was found - it is not absolute proof
@@ -186,7 +324,8 @@ def write_html_report(results_dir, detections, warnings):
     return out
 
 
-def summarize(results_dir):
+def summarize(results_dir, metadata=None):
+    metadata = metadata or {}
     detections, warnings = [], []
     for f in glob.glob(os.path.join(results_dir, "*_detected.json")):
         try:
@@ -200,6 +339,8 @@ def summarize(results_dir):
     print(BOLD + "=" * 62 + RESET)
     print(BOLD + "  RAQEEB SCAN RESULT" + RESET)
     print(BOLD + "=" * 62 + RESET)
+    device = metadata.get("device") or metadata.get("serial") or "this phone"
+    print(DIM + f"  Scanned: {device}" + RESET)
     if detections:
         print(RED + BOLD + f"\n  SPYWARE DETECTED - {len(detections)} match(es) against known spyware\n" + RESET)
         for d in detections:
@@ -231,7 +372,7 @@ def summarize(results_dir):
 
     # Write and open an easy-to-read browser report.
     try:
-        report = write_html_report(results_dir, detections, warnings)
+        report = write_html_report(results_dir, detections, warnings, metadata)
         print(GREEN + "\n  Opening an easy-to-read report in your browser..." + RESET)
         import webbrowser
         webbrowser.open("file:///" + report.replace("\\", "/"))
@@ -251,10 +392,27 @@ def main():
     args = ap.parse_args()
 
     if args.summarize:
+        # Re-reading an existing scan: show the stored verdict from that folder.
         sys.exit(summarize(args.target))
 
     zip_path = repack_if_needed(args.target)
-    results = os.path.splitext(args.target)[0] + "-results"
+
+    # Major improvement: check the archive is complete and readable before
+    # spending several minutes scanning it. Do not scan broken evidence.
+    problem = verify_archive(args.target)
+    if problem:
+        print(RED + "  " + problem + RESET)
+        sys.exit(1)
+
+    metadata = read_metadata(zip_path) if zip_path else {}
+
+    # Save results to a fresh, timestamped folder so a re-scan NEVER destroys
+    # the previous (possibly important) findings. For a forensic tool it is
+    # critical that past evidence remains available.
+    stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+    base = os.path.splitext(os.path.basename(args.target))[0]
+    results = os.path.join(os.path.dirname(os.path.abspath(args.target)),
+                           f"{base}-results-{stamp}")
     cmd = [MVT, "check-androidqf", "--non-interactive", "-o", results, zip_path]
     if not shutil.which(MVT) and not os.path.exists(MVT):
         print(RED + "  MVT was not found. Install it once with:" + RESET)
@@ -271,7 +429,7 @@ def main():
     if not args.pin and "Cannot decrypt backup" in proc.stdout + proc.stderr:
         print(YELLOW + "Note: your SMS messages were skipped (backup is locked with your device PIN)." + RESET)
         print(YELLOW + "Re-run with:  -p YOUR-PIN   to include them." + RESET)
-    sys.exit(summarize(results))
+    sys.exit(summarize(results, metadata))
 
 
 if __name__ == "__main__":
