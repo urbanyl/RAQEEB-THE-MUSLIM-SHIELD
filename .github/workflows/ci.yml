@@ -23,8 +23,9 @@ jobs:
           go-version: "1.26"
           check-latest: true
 
-      # The Go binary embeds on-device collectors. They are not stored in git
-      # (rebuilt at release time), so pre-build them before running tests.
+      # The Go binary embeds on-device collectors AND a Linux adb binary.
+      # They are not stored in git (rebuilt/fetched at release time), so
+      # produce them here before running tests.
       - name: Build Android collector binaries
         shell: bash
         working-directory: android-collector
@@ -33,6 +34,13 @@ jobs:
             if [ "$arch" = arm ]; then export GOARM=6; else unset GOARM; fi
             GOOS=linux GOARCH=$arch go build -ldflags="-s -w" -o ../assets/collector_$arch .
           done
+
+      - name: Fetch Linux adb (platform-tools)
+        shell: bash
+        run: |
+          wget -q https://dl.google.com/android/repository/platform-tools-latest-linux.zip -O pt.zip
+          unzip -q -o pt.zip
+          cp platform-tools/adb assets/adb_linux
 
       - name: Run Go tests
         run: go test ./...
