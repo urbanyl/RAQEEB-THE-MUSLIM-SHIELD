@@ -1,0 +1,54 @@
+name: CI
+
+# Runs the Go unit tests and checks the Python tooling on every push and
+# pull request, so problems are caught before a release tag triggers the
+# build workflow (raqeeb-build.yml).
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+
+jobs:
+  test-go:
+    name: Go unit tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.26"
+          check-latest: true
+
+      # The Go binary embeds on-device collectors. They are not stored in git
+      # (rebuilt at release time), so pre-build them before running tests.
+      - name: Build Android collector binaries
+        shell: bash
+        working-directory: android-collector
+        run: |
+          for arch in arm arm64 amd64 386; do
+            if [ "$arch" = arm ]; then export GOARM=6; else unset GOARM; fi
+            GOOS=linux GOARCH=$arch go build -ldflags="-s -w" -o ../assets/collector_$arch .
+          done
+
+      - name: Run Go tests
+        run: go test ./...
+
+  check-python:
+    name: Python tooling sanity check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Compile-check Python scripts
+        run: |
+          python -m py_compile raqeeb.py raqeeb-scan.py

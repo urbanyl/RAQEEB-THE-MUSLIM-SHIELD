@@ -46,6 +46,11 @@ python raqeeb.py
 
 Pick **1** for Android. It collects, scans, and opens the report for you.
 
+> **Tip:** If running the setup commands sounds fiddly, just double-click
+> **`setup.bat`** in the folder instead. It installs the scanner and downloads
+> the fingerprint lists for you, then you can double-click
+> **`Scan my phone.bat`** to scan.
+
 **iPhone (experimental):** pick **2**. First download `raqeeb-ios-tools.zip`
 from the [Releases page](https://github.com/Raqeeb-info/RAQEEB-THE-MUSLIM-SHIELD/releases),
 unzip it into the folder, and install Apple's USB driver (comes with iTunes or

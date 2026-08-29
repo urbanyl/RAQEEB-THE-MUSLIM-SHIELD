@@ -11,3 +11,14 @@ assets/adb*
 assets/AdbWin*
 raqeeb-ios-tools/
 demo.keystore
+# Build output
+build/
+dist/
+# Python
+__pycache__/
+*.pyc
+.venv/
+venv/
+# Local logs / scratch
+*.log
+log/

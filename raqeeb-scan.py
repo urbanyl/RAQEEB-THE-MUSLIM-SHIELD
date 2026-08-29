@@ -47,6 +47,16 @@ FRIENDLY = [
     ("disabled sharing of security reports",
      "A privacy setting is turned off. Normal if you chose it yourself."),
     ("root", "Possible sign the phone is rooted (security removed). Serious if you didn't root it yourself."),
+    ("Serial Number",
+     "The phone's serial number appeared in the data. This is normal - it just helps identify the scan."),
+    ("android.permission",
+     "An app holds a permission that can read data or track activity. Check that the app is one you installed and trust."),
+    ("accessibility",
+     "An app can read what's on your screen. Only legitimate apps (screen readers, some banking apps) usually need this - worth a second look if you don't recognise it."),
+    ("Keylogging",
+     "An app may be able to record what you type. Legitimate keyboards do this too - confirm it's your keyboard or a trusted app."),
+    ("screen recording",
+     "An app may be able to record the screen. Suspicious if you don't recognise the app."),
 ]
 
 
@@ -246,6 +256,11 @@ def main():
     zip_path = repack_if_needed(args.target)
     results = os.path.splitext(args.target)[0] + "-results"
     cmd = [MVT, "check-androidqf", "--non-interactive", "-o", results, zip_path]
+    if not shutil.which(MVT) and not os.path.exists(MVT):
+        print(RED + "  MVT was not found. Install it once with:" + RESET)
+        print(YELLOW + "      pip install -r requirements.txt" + RESET)
+        print(DIM + "  (or simply:  pip install mvt)" + RESET)
+        sys.exit(1)
     if args.pin:
         cmd[2:2] = ["-p", args.pin]
     print(DIM + "Scanning... this can take several minutes." + RESET)

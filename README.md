@@ -26,6 +26,13 @@ Raqeeb does **not** scan your phone by itself. It works in two stages:
 
 ## Quick start (Windows)
 
+### 0. One-time setup (recommended)
+
+Double-click **`setup.bat`** in this folder. It installs the MVT scanner and
+downloads the spyware fingerprint lists for you. Then skip straight to
+**Step 4** below. (Requires [Python](https://www.python.org/downloads/) — tick
+"Add Python to PATH" during install.)
+
 ### 1. Download
 
 Get `raqeeb-The.muslim.shield.exe` from the [latest release](../../releases/latest).

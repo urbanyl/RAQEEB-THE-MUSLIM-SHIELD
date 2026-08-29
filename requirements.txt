@@ -1,0 +1,9 @@
+# Raqeeb Python tooling
+#
+# Install once with:
+#     pip install -r requirements.txt
+#
+# mvt does the actual spyware scan (mvt-android / mvt-ios). The launcher
+# (raqeeb.py) and result reader (raqeeb-scan.py) shell out to it.
+
+mvt>=2.7
